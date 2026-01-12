@@ -1,30 +1,51 @@
-import React, { createContext, useState, useEffect } from 'react';
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import api from "../api";
 
-export const AuthContext = createContext();
+const AuthContext = createContext(null);
 
-export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-
-  useEffect(() => {
-    const savedUser = localStorage.getItem('user');
-    if (savedUser) setUser(JSON.parse(savedUser));
-  }, []);
-
-  const login = (userData, token) => {
-    localStorage.setItem('user', JSON.stringify(userData));
-    localStorage.setItem('token', token);
-    setUser(userData);
-  };
+export function AuthProvider({ children }) {
+  const [user, setUser] = useState(null); 
+  const [loading, setLoading] = useState(true);
 
   const logout = () => {
-    localStorage.clear();
+    localStorage.removeItem("token");
     setUser(null);
-    window.location.href = '/login';
   };
 
-  return (
-    <AuthContext.Provider value={{ user, login, logout }}>
-      {children}
-    </AuthContext.Provider>
-  );
+const login = async (email, password) => {
+  const res = await api.post("/auth/login", { email, password });
+
+  const userData = res.data.data.user; 
+  const token = res.data.data.token;
+
+  localStorage.setItem("token", token);
+  localStorage.setItem("user", JSON.stringify(userData));
+
+  setUser(userData);
+
+  return userData;   
 };
+
+const signup = async (payload) => {
+    const res = await api.post("/auth/signup", payload);
+    return res;
+  };
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setLoading(false);
+      return;
+    }
+    setLoading(false);
+  }, []);
+
+  const value = useMemo(
+    () => ({ user, setUser, login, signup, logout, loading }),
+    [user, loading]
+  );
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}
+
+export const useAuth = () => useContext(AuthContext);

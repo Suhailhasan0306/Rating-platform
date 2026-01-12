@@ -5,6 +5,7 @@ const { getMyStores, ratingsForStore, averageForStore } = require('../controller
 
 router.use(auth, permit('STORE_OWNER'));
 
+router.get('/dashboard', getMyStores); 
 router.get('/stores', getMyStores);
 
 router.get('/stores/:id/ratings', ratingsForStore);

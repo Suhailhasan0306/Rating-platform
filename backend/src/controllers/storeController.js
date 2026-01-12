@@ -1,7 +1,6 @@
 const { Store, Rating, sequelize } = require('../models');
-const { Op } = require('sequelize');
 const { validationResult } = require('express-validator');
-const { success, error } = require('../utils/responseHandler');
+const { ok, error } = require('../utils/responseHandler');  // ✅ ok import
 
 const listStores = async (req, res) => {
   try {
@@ -10,9 +9,7 @@ const listStores = async (req, res) => {
     const results = await Promise.all(
       stores.map(async (store) => {
         const ratingData = await Rating.findOne({
-          attributes: [
-            [sequelize.fn('AVG', sequelize.col('rating')), 'avg']
-          ],
+          attributes: [[sequelize.fn('AVG', sequelize.col('rating')), 'avg']],
           where: { store_id: store.id },
           raw: true,
         });
@@ -28,7 +25,7 @@ const listStores = async (req, res) => {
       })
     );
 
-    return success(res, results);
+    return ok(res, results);   // ✅ success -> ok
   } catch (err) {
     console.error(err);
     return error(res, 'Failed to fetch stores', 500);
@@ -50,11 +47,9 @@ const submitOrUpdateRating = async (req, res) => {
 
     if (!userId) return error(res, 'User ID missing from token', 401);
 
-    // Check if store exists
     const store = await Store.findByPk(storeId);
     if (!store) return error(res, 'Store not found', 404);
 
-    // Check if user already rated this store
     const existing = await Rating.findOne({ where: { user_id: userId, store_id: storeId } });
 
     if (existing) {
@@ -64,24 +59,20 @@ const submitOrUpdateRating = async (req, res) => {
       await Rating.create({ user_id: userId, store_id: storeId, rating });
     }
 
-    // ✅ Recalculate average rating and update store table
     const avg = await Rating.findOne({
       attributes: [[sequelize.fn('AVG', sequelize.col('rating')), 'avg']],
       where: { store_id: storeId },
       raw: true,
     });
-    const avgRating = parseFloat(avg.avg).toFixed(2);
-    // store.average_rating = avgRating;
-    // await store.save();
-    return success(res, { message: 'Rating updated', average_rating: avgRating });
 
+    const avgRating = parseFloat(avg.avg).toFixed(2);
+
+    return ok(res, { message: 'Rating updated', average_rating: avgRating }); // ✅ success -> ok
   } catch (err) {
     console.error(err);
     return error(res, err.message, 500);
   }
 };
-
-
 
 module.exports = {
   listStores,

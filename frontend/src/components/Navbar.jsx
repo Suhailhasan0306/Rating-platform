@@ -1,34 +1,68 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
+import { Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
-const Navbar = () => {
+export default function Navbar() {
   const { user, logout } = useAuth();
-
+  console.log("USER DATA =>", user);
   return (
-    <nav className="navbar">
-      <div className="nav-left">
+    <nav
+      style={{
+        background: "#000",
+        color: "#fff",
+        padding: "15px 30px",
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+      }}
+    >
+      <h2 style={{ margin: 0 }}>Rating Platform</h2>
+      <div style={{ display: "flex", gap: 20, alignItems: "center" }}>
+        {user?.role === "ADMIN" && (
+          <Link to="/admin" style={{ color: "white", textDecoration: "none" }}>
+            Admin Dashboard
+          </Link>
+        )}
+
+        {user?.role === "STORE_OWNER" && (
+          <Link to="/owner" style={{ color: "white", textDecoration: "none" }}>
+            Owner Dashboard
+          </Link>
+        )}
+
         {user && (
+          <Link to="/stores" style={{ color: "white", textDecoration: "none" }}>
+            Stores
+          </Link>
+        )}
+        {!user && (
           <>
-            <Link to="/stores">Stores</Link>
-            {user.role === 'ADMIN' && <Link to="/admin">Admin Dashboard</Link>}
-            {user.role === 'STORE_OWNER' && <Link to="/owner">Owner Dashboard</Link>}
+            <Link to="/login" style={{ color: "white", textDecoration: "none" }}>
+              Login
+            </Link>
+
+            <Link to="/signup" style={{ color: "white", textDecoration: "none" }}>
+              Signup
+            </Link>
           </>
         )}
-      </div>
-      <div className="nav-right">
-        {!user ? (
-          <>
-            <Link to="/login">Login</Link>
-            <Link to="/signup">Signup</Link>
-          </>
-        ) : (
-          <button onClick={logout}>Logout</button>
+
+        {user && (
+          <button
+            onClick={logout}
+            style={{
+              padding: "6px 14px",
+              border: "none",
+              borderRadius: 6,
+              cursor: "pointer",
+              background: "red",
+              color: "white",
+              fontWeight: "bold",
+            }}
+          >
+            Logout
+          </button>
         )}
       </div>
     </nav>
   );
-};
-
-export default Navbar;
-
+}

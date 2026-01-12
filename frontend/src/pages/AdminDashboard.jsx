@@ -1,29 +1,53 @@
-import React, { useEffect, useState } from 'react';
-import API from '../api';
+import { useEffect, useState } from "react";
+import api from "../api";
+import { useAuth } from "../context/AuthContext";
 
-const AdminDashboard = () => {
+export default function AdminDashboard() {
+  const { logout } = useAuth();
+
+  const [storeName, setStoreName] = useState("");
+  const [address, setAddress] = useState("");
+  const [ownerEmail, setOwnerEmail] = useState("");
+
   const [stores, setStores] = useState([]);
-  const [form, setForm] = useState({ name: '', address: '', ownerEmail: '' });
+  const [msg, setMsg] = useState("");
 
   const fetchStores = async () => {
-    const res = await API.get('/admin/stores');
-    setStores(res.data.data);
-  };
-
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
-
-  const createStore = async (e) => {
-    e.preventDefault();
     try {
-      await API.post('/admin/stores', form);
-      alert('✅ Store created successfully');
-      setForm({ name: '', address: '', ownerEmail: '' });
-      fetchStores();
+      const res = await api.get("/admin/stores");
+      console.log("FETCH STORES RESPONSE =>", res.data);
+      setStores(res.data?.data || res.data || []);
     } catch (err) {
-      alert(err.response?.data?.message || '❌ Failed to create store');
+      console.log(err);
+      setMsg("Failed to load stores");
     }
+  };
+
+  const addStore = async () => {
+    setMsg("");
+    try {
+      console.log("ADD STORE DATA =>", {
+       name: storeName,
+       address,
+       ownerEmail,
+      });
+      await api.post("/admin/stores", {
+        name: storeName,
+        address,
+        ownerEmail,
+      });
+
+      setStoreName("");
+      setAddress("");
+      setOwnerEmail("");
+      setMsg("Store added");
+
+      fetchStores();
+    }  catch (err) {
+      console.log("ADD STORE ERROR DATA =>", err?.response?.data);
+      console.log("ADD STORE ERROR STATUS =>", err?.response?.status);
+      setMsg(err?.response?.data?.message || "Failed to add store");
+      }
   };
 
   useEffect(() => {
@@ -31,43 +55,79 @@ const AdminDashboard = () => {
   }, []);
 
   return (
-    <div>
-      <h2>Admin Dashboard</h2>
-      <form onSubmit={createStore}>
-        <input
-          name="name"
-          placeholder="Store Name"
-          onChange={handleChange}
-          value={form.name}
-          required
-        />
-        <input
-          name="address"
-          placeholder="Address"
-          onChange={handleChange}
-          value={form.address}
-          required
-        />
-        <input
-          name="ownerEmail"
-          placeholder="Owner Email"
-          onChange={handleChange}
-          value={form.ownerEmail}
-          required
-        />
-        <button type="submit">Add Store</button>
-      </form>
+    <div style={{ padding: 20 }}>
+      <div style={{ display: "flex", justifyContent: "space-between" }}>
+        <h2>Admin Dashboard</h2>
+      </div>
 
-      <h3>All Stores</h3>
-      {stores.map((store) => (
-        <div key={store.id} className="card">
-          <h4>{store.name}</h4>
-          <p>Owner Email: {store.email || 'Not Assigned'}</p>
-          <p>Average Rating: ⭐ {store.average_rating || 'No Ratings Yet'}</p>
+      <div
+        style={{
+          background: "#fff",
+          padding: 16,
+          borderRadius: 10,
+          marginTop: 14,
+          boxShadow: "0 5px 20px rgba(0,0,0,0.08)",
+        }}
+      >
+        <h3>Add Store</h3>
+
+        <input
+          placeholder="Store Name"
+          value={storeName}
+          onChange={(e) => setStoreName(e.target.value)}
+          style={{ width: "100%", padding: 10, marginTop: 8 }}
+        />
+        <input
+          placeholder="Address"
+          value={address}
+          onChange={(e) => setAddress(e.target.value)}
+          style={{ width: "100%", padding: 10, marginTop: 8 }}
+        />
+        <input
+          placeholder="Owner Email"
+          value={ownerEmail}
+          onChange={(e) => setOwnerEmail(e.target.value)}
+          style={{ width: "100%", padding: 10, marginTop: 8 }}
+        />
+
+        {msg && <p style={{ color: "green" }}>{msg}</p>}
+
+        <button
+          onClick={addStore}
+          style={{
+            width: "100%",
+            marginTop: 10,
+            padding: 12,
+            background: "#2563eb",
+            color: "white",
+            border: "none",
+            borderRadius: 8,
+            cursor: "pointer",
+          }}
+        >
+          Add Store
+        </button>
+      </div>
+
+      <h3 style={{ marginTop: 20 }}>All Stores</h3>
+
+      {stores.map((s) => (
+        <div
+          key={s.id}
+          style={{
+            padding: 12,
+            borderRadius: 10,
+            background: "#fff",
+            marginTop: 10,
+            boxShadow: "0 5px 20px rgba(0,0,0,0.06)",
+          }}
+        >
+          <b>{s.name}</b>
+          <p style={{ margin: 0 }}>Address: {s.address}</p>
+          <p style={{ margin: 0 }}>Owner: {s.ownerEmail || "N/A"}</p>
         </div>
       ))}
     </div>
   );
-};
+}
 
-export default AdminDashboard;

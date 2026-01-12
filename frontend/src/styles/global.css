@@ -41,7 +41,6 @@ body {
   opacity: 0.8;
 }
 
-/* 🔹 Common Form Styles */
 .form-container {
   max-width: 400px;
   margin: 50px auto;
@@ -79,7 +78,6 @@ button:hover {
   background-color: #0056b3;
 }
 
-/* 🔹 Card Styling (for Stores, Dashboards, etc.) */
 .card {
   background: white;
   padding: 20px;
@@ -103,7 +101,6 @@ button:hover {
   margin-bottom: 10px;
 }
 
-/* 🔹 Rating Dropdown */
 select {
   padding: 8px;
   border-radius: 4px;

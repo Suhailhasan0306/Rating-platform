@@ -14,8 +14,8 @@ const RatingBox = ({ storeId, onRated }) => {
     try {
       await API.post(`/stores/${storeId}/rate`, { rating });
       alert('Rating submitted successfully');
-      onRated();  // ✅ Parent component will re-fetch stores
-      setRating(0); // Reset rating
+      onRated();  
+      setRating(0); 
     } catch (err) {
       alert(err.response?.data?.message || 'Failed to submit rating');
     } finally {
